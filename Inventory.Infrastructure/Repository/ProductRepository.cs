@@ -55,14 +55,14 @@ namespace Inventory.Infrastructure.Repository
                                     .FirstOrDefaultAsync(prod => prod.ProductId == id);
         }
 
+        public async Task SaveChangesAsync()
+        {
+            await _db.SaveChangesAsync();
+        }
+
         private async Task<Product> GetByIdWithTrackingAsync(int id)
         {
             return await _db.Products.FindAsync(id);
-        }
-
-        private async Task SaveChangesAsync()
-        {
-            await _db.SaveChangesAsync();
         }
     }
 }

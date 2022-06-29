@@ -1,4 +1,5 @@
 ﻿using Inventory.Domain.Entities;
+using Inventory.Domain.Interfaces;
 using Inventory.Domain.Interfaces.Repository;
 using Inventory.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,10 @@ namespace Inventory.Infrastructure.Repository
             _db = context;
         }
 
-        public Category Add(Category category)
+        public Task<Category> Add(Category category)
         {
             _db.Categories.Add(category);
-            return category;
+            return Task.FromResult(category);
         }
 
         public async Task Delete(int id)
@@ -31,10 +32,14 @@ namespace Inventory.Infrastructure.Repository
 
         public async Task Edit(Category category)
         {
-            var editCategory = await _db.Categories.FindAsync(category.CategoryId);
-            if(editCategory == null)
+            var editCategory = await this.GetCategoryByIdAsync(category.CategoryId);
+            if (editCategory != null)
             {
-                throw new InvalidOperationException(string.Format("La categoria que esta "));
+                editCategory.Name = category.Name;
+                editCategory.Description = category.Description;
+                editCategory.Products = category.Products;
+
+                await Task.FromResult(_db.Entry(editCategory).State = EntityState.Modified);
             }
         }
 
@@ -55,6 +60,11 @@ namespace Inventory.Infrastructure.Repository
         public async Task SaveAllChangesAsync()
         {
             await _db.SaveChangesAsync();
+        }
+
+        private async Task<Category> GetCategoryByIdAsync(int id)
+        {
+            return await _db.Categories.FindAsync(id);
         }
     }
 }
